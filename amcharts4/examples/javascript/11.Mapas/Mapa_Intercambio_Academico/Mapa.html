@@ -1,0 +1,171 @@
+                    
+<html>
+<head>
+  <script src="data.js"></script>
+  <script src="https://cdn.anychart.com/geodata/1.2.0/custom/world_source/world_source.js"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-map.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js?hcode=be5162d915534272a57d0bb781d27f2b"></script>
+  
+
+  <script src="https://cdn.anychart.com/releases/v8/themes/light_earth.min.js"></script>
+  <script src="https://cdn.anychart.com/releases/v8/themes/light_blue.min.js"></script>
+  <script src="https://cdn.anychart.com/releases/v8/themes/light_glamour.min.js"></script>
+  
+
+  <link href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet">
+  <link href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css?hcode=be5162d915534272a57d0bb781d27f2b" type="text/css" rel="stylesheet">
+  <style type="text/css">
+html, body, #container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+</style>
+</head>
+<body>
+  <div id="container"></div>
+  <script>
+anychart.onDocumentReady(function () {
+
+	// set chart theme ->lightGlamour ->lightEarth >lightBlue
+anychart.theme('lightBlue');
+    // Creates map chart
+    var map = anychart.connector();
+
+    // Sets settings for map chart
+    map.crs('fahey')
+            .padding([10, 10, 10, 10])
+            .geoData('anychart.maps.world_source');
+    map.interactivity().selectionMode('true');
+
+    // Sets title for map chart and customizes it
+    map.title()
+            .enabled(true)
+            .useHtml(true)
+            .padding([0, 0, 20, 0])
+            .fontSize(25)
+            .text('Intercambio academico '+'2014-2019');
+   
+
+    // configure the font of legend items
+    map.legend().fontColor("#455a64");
+    map.legend().fontSize(14);
+    map.legend().fontWeight();
+
+    // Sets credits data
+    map.credits()
+            .enabled(true)
+            .url('https://bdmy.org.mx')
+            .text('https://bdmy.org.mx')
+            .logoSrc('https://en.wikipedia.org/static/favicon/wikipedia.ico');
+// sets projection -> orthographic -> mercator ->robinson
+    map.crs('robinson');
+    map.interactivity();
+    // Disables zoom On Mouse Wheel
+map.interactivity().zoomOnMouseWheel(false)
+// Disables zoom on double click
+                    .keyboardZoomAndMove(false)
+// Disables zoom on double click
+                    .zoomOnDoubleClick(true);
+
+
+    
+ 
+    function createSeries(name, color, data) {
+        // Creates connector series for destinations and customizes them
+        var connectorSeries = map.connector(data)
+                .startSize(1)
+                .endSize(0.1)
+                .name(name)
+                .stroke('1.2 ' + color)
+                .curvature(.3);
+
+        connectorSeries.hovered().stroke('1.5 #455a64');
+
+       //tamaño de los circulos antes de poner el raton
+        connectorSeries.markers()
+                .position('100%')
+                .size(10)
+                .fill(color)
+                .stroke('2 #E1E1E1')
+                .type('arrowhead');
+
+     //tamaño de los circulos raton sobre e punto
+
+        connectorSeries.hovered().markers()
+                .position('100%')
+                .size(10)
+                .fill('#455a64')
+                .stroke('2 #455a64')
+                ;
+
+        connectorSeries.legendItem().iconFill(color);
+
+        
+        // Customizes labels for the destination series
+        connectorSeries.labels()
+                .enabled(true)
+                .fontSize(10)
+                .offsetX(0)
+                .offsetY(0)
+                .position('100%')
+                .format(function () {
+                    return this.getData('to')
+                });
+
+
+
+        // Customizes labels on hover for the destination series
+        connectorSeries.hovered().labels()
+                .fontColor('#455a64')
+                .fontSize(11);
+    }
+
+
+
+    // The data used in this sample can be obtained from the CDN
+    // https://cdn.anychart.com/samples/maps-projections/10-busiest-routes-from-jfk-with-fahey-projection/data.js
+    
+    createSeries('Colaboración extranjera', '#4682B4', getColExtranData());
+    createSeries('Colaboración nacional', '#B8860B', getColNacioData());
+    createSeries('Congresos y Simposios', '#DC143C', getCongresosData());
+    createSeries('Estancias y Talleres', '#8b48b9', getEstanciasData());
+    
+
+
+    // Sets tooltip setting for the destination series
+    map.tooltip()
+            .useHtml(true)
+            .padding([8, 13, 10, 13])
+            .title(true)
+            .separator(true)
+            .titleFormat('<span style="font-size: 15px"> Participante(s): {%name}</span>'+
+                '<br/>'+
+                '<span style="font-size: 11px"> {%info}  </span>')
+            .fontSize(13)
+            .format(function () {
+                return  '<span style="font-size: 12px; color: #cbcbcb"> Año: </span>' +
+                        anychart.format.number(this.getData('año'))
+                        ;
+            });
+
+    // Sets Legend for the chart
+    map.legend(true);
+
+    // create zoom controls
+    var zoomController = anychart.ui.zoom();
+    zoomController.render(map);
+
+    // Sets container id for the chart
+    map.container('container');
+    // Initiates chart drawing
+    map.draw();
+});
+</script>
+</body>
+</html>
+
+                
